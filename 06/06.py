@@ -8,67 +8,43 @@ character = load_image('./Lecture04_2D_Rendering/character.png')
 
 #---------------------------------------------
 
-dir = 0
-run_px = 5
-width = 800
-height = 600
-space = 200
-
-def nextdir(dir):
-    return (dir + 90) % 360
-
-def out(me):
-    return me.x > width - space or me.x < space or me.y > height - space * 2 or me.y < 90
-
-class chara:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-
-    def run(self, px, deg):
-        self.x += px * math.cos(math.radians(deg))
-        self.y += px * math.sin(math.radians(deg))
-
-    def draw(self):
-        character.draw_now(self.x, self.y)
-
-def rectmove(me):
-    while True:
-        global dir
-        me.run(5, dir)
-        if out(me):
-            me.run(-5, dir)
-            dir = nextdir(dir)
+def render_all(x, y):
         clear_canvas_now()
-        me.draw()
         grass.draw_now(400, 30)
+        character.draw_now(x, y)
         delay(0.01)
 
-def circlemove(me):
-    while True:
-        global dir
-        me.run(5, dir)
-        dir = dir + 2
-        clear_canvas_now()
-        me.draw()
-        grass.draw_now(400, 30)
-        delay(0.01)
+def run_circle():
+    cx, cy, r = 400, 300, 200
+    for degree in range(-90, 270, 5):
+        x = cx + r * math.cos(math.radians(degree))
+        y = cy + r * math.sin(math.radians(degree))
+        render_all(x, y)
 
-me = chara(400, 90)
-me.draw()
-grass.draw_now(400, 30)
+def run_rectangle():
+    print('RECTANGLE')
 
-print('''
-l 입력 시 사각형 움직임
-c 입력 시 원 움직임
-''')
+    # bottom line
+    for x in range(50, 750+1, 10):
+        render_all(x, 90)
 
-press = input()
-# 오류 처리 생략
-if press == 'l':
-    rectmove(me)
-elif press == 'c':
-    circlemove(me)
+    # right line
+    for y in range(90, 550+1, 10):
+        render_all(750, y)
+
+    # top line
+    for x in range(750, 50-1, -10):
+        render_all(x, 550)
+
+
+     # left line
+    for y in range(550, 90-1, -10):
+        render_all(50, y)
+
+while True:
+    run_circle()
+    run_rectangle()
+    break
 
 #---------------------------------------------
 
