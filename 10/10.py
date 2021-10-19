@@ -1,6 +1,8 @@
+# drill 10
+
+
 from pico2d import *
 from random import randint
-import math
 
 open_canvas()
 small_ball_image = load_image('./Lecture09_Game_Obejects/ball21x21.png')
