@@ -1,13 +1,17 @@
 from pico2d import *
 
 pi = 3.141592
-RIGHT_DOWN, LEFT_DOWN, RIGHT_UP, LEFT_UP, SLEEP_TIMER = range(5)
+RIGHT_DOWN, LEFT_DOWN, RIGHT_UP, LEFT_UP, SLEEP_TIMER, SHIFT_DOWN, SHIFT_UP, RSHIFT_DOWN, RSHIFT_UP = range(9)
 
 key_event_table = {
     (SDL_KEYDOWN, SDLK_RIGHT): RIGHT_DOWN,
     (SDL_KEYDOWN, SDLK_LEFT): LEFT_DOWN,
     (SDL_KEYUP, SDLK_RIGHT): RIGHT_UP,
-    (SDL_KEYUP, SDLK_LEFT): LEFT_UP
+    (SDL_KEYUP, SDLK_LEFT): LEFT_UP,
+    (SDL_KEYDOWN, SDLK_LSHIFT): SHIFT_DOWN,
+    (SDL_KEYUP, SDLK_LSHIFT): SHIFT_UP,
+    (SDL_KEYDOWN, SDLK_RSHIFT): RSHIFT_DOWN,
+    (SDL_KEYUP, SDLK_RSHIFT): RSHIFT_UP
 }
 
 class IdleState:
@@ -80,10 +84,36 @@ class SleepState:
         else:
             boy.image.clip_composite_draw(boy.frame * 100, 300, 100, 100, pi / 2, 'v', boy.x - 25, boy.y - 25, 100, 100)
 
+class DashState:
+    def enter(boy, event):
+        boy.velocity *= 2
+        boy.timer = 100
+
+    def exit(boy, event):
+        boy.velocity = boy.dir
+
+    def do(boy):
+        boy.frame = (boy.frame + 1) % 8
+        boy.timer -= 1
+        if (boy.timer <= 0):
+            boy.add_event(SHIFT_UP)
+        boy.x += boy.velocity
+
+    def draw(boy):
+        if boy.velocity > 0:
+            boy.image.clip_draw(boy.frame * 100, 100, 100, 100, boy.x, boy.y)
+        else:
+            boy.image.clip_draw(boy.frame * 100, 0, 100, 100, boy.x, boy.y)
+
 next_state_table = {
-    IdleState: {RIGHT_UP: RunState, LEFT_UP: RunState, RIGHT_DOWN: RunState, LEFT_DOWN: RunState, SLEEP_TIMER:SleepState},
-    RunState: {RIGHT_UP: IdleState, LEFT_UP: IdleState, RIGHT_DOWN: IdleState, LEFT_DOWN: IdleState},
-    SleepState: {LEFT_DOWN: RunState, RIGHT_DOWN: RunState, LEFT_UP: RunState, RIGHT_UP: RunState}
+    IdleState: {RIGHT_UP: RunState, LEFT_UP: RunState, RIGHT_DOWN: RunState, LEFT_DOWN: RunState, SLEEP_TIMER:SleepState,
+                SHIFT_DOWN: IdleState, SHIFT_UP: IdleState, RSHIFT_DOWN: IdleState, RSHIFT_UP: IdleState},
+    RunState: {RIGHT_UP: IdleState, LEFT_UP: IdleState, RIGHT_DOWN: IdleState, LEFT_DOWN: IdleState,
+               SHIFT_DOWN: DashState, SHIFT_UP: RunState, RSHIFT_DOWN: DashState, RSHIFT_UP: RunState },
+    SleepState: {LEFT_DOWN: RunState, RIGHT_DOWN: RunState, LEFT_UP: RunState, RIGHT_UP: RunState,
+                 SHIFT_DOWN: SleepState, SHIFT_UP: SleepState, RSHIFT_DOWN: SleepState, RSHIFT_UP: SleepState},
+    DashState: {SHIFT_UP: RunState, SHIFT_DOWN: DashState, RSHIFT_UP: RunState, RSHIFT_DOWN: DashState,
+                LEFT_UP: IdleState, RIGHT_UP: IdleState, LEFT_DOWN: IdleState, RIGHT_DOWN: IdleState}
 }
 
 
