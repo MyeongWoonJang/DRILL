@@ -1,6 +1,7 @@
 import game_framework
 from pico2d import *
 from ball import Ball
+import random
 
 import game_world
 
@@ -134,11 +135,14 @@ class Boy:
         self.event_que = []
         self.cur_state = IdleState
         self.cur_state.enter(self, None)
+        self.base = None
 
     def get_bb(self):
         # fill here
         return self.x - 30, self.y - 30, self.x + 30, self.y + 50
 
+    def set_base(self, base):
+        self.base = base
 
 
     def fire_ball(self):
@@ -156,6 +160,14 @@ class Boy:
             self.cur_state.exit(self, event)
             self.cur_state = next_state_table[self.cur_state][event]
             self.cur_state.enter(self, event)
+
+        if self.base:
+            self.x += game_framework.frame_time * self.base.speed
+            if self.x >= self.base.x + 90:
+                self.x = self.base.x + 90
+            if self.x <= self.base.x - 90:
+                self.x = self.base.x - 90
+
 
 
     def draw(self):

@@ -74,6 +74,11 @@ def update():
     for game_object in game_world.all_objects():
         game_object.update()
 
+    for br in bricks.copy():
+        if collide(boy, br):
+            boy.y = br.y + 20 + 40
+            boy.set_base(br)
+
     for ball in balls.copy():
         if collide(ball, grass):
             ball.stop()
